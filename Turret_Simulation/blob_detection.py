@@ -9,15 +9,10 @@ while True:
     blur_frame = cv2.GaussianBlur(frame, (5,5), 0)
     hsv_frame = cv2.cvtColor(blur_frame, cv2.COLOR_BGR2HSV)
     
-    lower_range_1 = np.array([0,100,20])
-    upper_range_1 = np.array([10,255,255])
-    #lower_range_2 = np.array([160,100,20])
-    #upper_range_2 = np.array([179,255,255])
+    green_lower = np.array([25, 52, 72])
+    green_higher = np.array([102,255,255])
     
-    lower_mask = cv2.inRange(hsv_frame, lower_range_1, upper_range_1)
-    #upper_mask = cv2.inRange(hsv_frame, lower_range_2, upper_range_2)
-    mask = lower_mask #+ upper_mask
-    
+    mask = cv2.inRange(hsv_frame, green_lower, green_higher) 
     contours, heirarchy = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
 
     (h, w) = frame.shape[:2]
@@ -28,7 +23,7 @@ while True:
     for contour in contours:
         area = cv2.contourArea(contour)
         
-        if area > 4000:
+        if area > 1000:
             M = cv2.moments(contour)
             cX = int(M["m10"] / M["m00"])
             cY = int(M["m01"] / M["m00"])
@@ -38,6 +33,7 @@ while True:
             change_x = cX - frame_center_x 
             change_y = frame_center_y - cY
             print(change_x, change_y)
+        
 
     cv2.imshow("Frame", frame)
     cv2.imshow("Mask", mask)
