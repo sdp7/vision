@@ -8,13 +8,12 @@ import imutils
 
 class FireDetector:
     def __init__(self):
-        self.capture = cv2.VideoCapture(0)
+        self.capture = cv2.VideoCapture('http://abra:8080/?action=stream')
 
         rospy.init_node('fire_location')
         self.rate = rospy.Rate(10)
-        self.pub = rospy.Publisher("is_Fire", Float64MultiArray, queue_size=10)
+        self.pub = rospy.Publisher("isFire", Float64MultiArray, queue_size=10)
         self.net = cv2.dnn.readNet("best.onnx")
-        self.cap = cv2.VideoCapture(0)
         self.colors = [(255, 255, 0), (0, 255, 0), (0, 255, 255), (255, 0, 0)]
         self.counter = 0
 
@@ -64,43 +63,41 @@ class FireDetector:
         resized = np.zeros((_max, _max, 3), np.uint8)
         resized[0:col, 0:row] = source
     
-    # resize to 640x640, normalize to [0,1[ and swap Red and Blue channels
+        # resize to 640x640, normalize to [0,1[ and swap Red and Blue channels
         result = cv2.dnn.blobFromImage(resized, 1/255.0, (640, 640), swapRB=True)
         return result
 
     # the output will be written to output.avi
-    # out = cv2.VideoWriter(
-    # 'output.avi',
-    # cv2.VideoWriter_fourcc(*'MJPG'),
-    # 15.,
-    # (640,640))
+    global out
+    out = cv2.VideoWriter('output.avi',cv2.VideoWriter_fourcc(*'MJPG'),15.0,(640,640))
     
     #This should publish the coordinates of the fire (specifically the base of the fire)
     def publish(self):
-        ret,frame = self.cap.read()
+        ret,frame = self.capture.read()
         shapedframe = self.format_yolov5(frame)
         self.net.setInput(shapedframe)
         outs = self.net.forward()
         class_ids, confidences, boxes = self.unwrap_detection(shapedframe, outs[0])
         CoordMsg = Float64MultiArray()
-        if boxes.size() != 0:
+        if len(boxes) != 0:
                  mainFire = np.argmax(confidences)
                  mainFireLoc = boxes[mainFire]
                  CentreX = mainFireLoc[0] + mainFireLoc[2]
                  CentreY = mainFireLoc[1] - mainFireLoc[3]
                  CoordMsg.data.append(CentreX)
                  CoordMsg.data.append(CentreY)
-        self.pub.publish(dCoordMsg)
+        # print(f'We got this coordmsg {CoordMsg}')
+        self.pub.publish(CoordMsg)
         self.rate.sleep()
 	
-        #For Printing out Fire
-        #for (classid, confidence, box) in zip(class_ids, confidences, boxes):
-            #	color = colors[int(classid) % len(colors)]
-            #	cv2.rectangle(frame, box, color, 2)
-            #	cv2.rectangle(frame, (box[0], box[1] - 20), (box[0] + box[2], box[1]), color, -1)
-            #	cv2.putText(frame, 'fire', (box[0], box[1] - 10), cv2.FONT_HERSHEY_SIMPLEX, .5, (0,0,0))
-        #cv2.imshow("output", frame)
-        #cv2.waitKey(1)
+        # For Printing out Fire
+        # for (classid, confidence, box) in zip(class_ids, confidences, boxes):
+        #     	color = self.colors[int(classid) % len(self.colors)]
+        #     	cv2.rectangle(frame, box, color, 2)
+        #     	cv2.rectangle(frame, (box[0], box[1] - 20), (box[0] + box[2], box[1]), color, -1)
+        #     	cv2.putText(frame, 'fire', (box[0], box[1] - 10), cv2.FONT_HERSHEY_SIMPLEX, .5, (0,0,0))
+        # cv2.imshow("output", frame)
+        # cv2.waitKey(1)
 
 if __name__ == '__main__':
     F = FireDetector()
