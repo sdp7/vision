@@ -18,7 +18,7 @@ def listen():
 	rospy.spin()
 
 #publishes if the fire is in range and the distance to the fire
-def publish(depth, depthRange)
+def publish(depth, depthRange):
 	rangepub = rospy.Publisher('isRange',customDistance)
 	range = customDistance()
 	range.inRange = depthRange
