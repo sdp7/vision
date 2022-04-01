@@ -82,14 +82,15 @@ class FireDetector:
         self.net.setInput(shapedframe)
         outs = self.net.forward()
         class_ids, confidences, boxes = self.unwrap_detection(shapedframe, outs[0])
-        mainFire = np.argmax(confidences)
-        mainFireLoc = boxes[mainFire]
-        CentreX = mainFireLoc[0] + mainFireLoc[2]
-        CentreY = mainFireLoc[1] - mainFireLoc[3]
         CoordMsg = Float64MultiArray()
-        CoordMsg.data.append(CentreX)
-        CoordMsg.data.append(CentreY)
-        self.pub.publish(CoordMsg)
+        if boxes.size() != 0:
+                 mainFire = np.argmax(confidences)
+                 mainFireLoc = boxes[mainFire]
+                 CentreX = mainFireLoc[0] + mainFireLoc[2]
+                 CentreY = mainFireLoc[1] - mainFireLoc[3]
+                 CoordMsg.data.append(CentreX)
+                 CoordMsg.data.append(CentreY)
+        self.pub.publish(dCoordMsg)
         self.rate.sleep()
 	
         #For Printing out Fire
