@@ -10,7 +10,7 @@ class FireDetector:
     def __init__(self):
         self.capture = cv2.VideoCapture('http://abra:8080/?action=stream')
 
-        rospy.init_node('fire_location')
+        rospy.init_node('isFire')
         self.rate = rospy.Rate(50)
         self.pub = rospy.Publisher("isFire", Float64MultiArray, queue_size=10)
         self.net = cv2.dnn.readNet("best.onnx")
@@ -108,7 +108,7 @@ if __name__ == '__main__':
             # if k == 27:
             #     break
         except rospy.ROSInterruptException:
-            pass
+            break
     
     cv2.destroyAllWindows()
 
