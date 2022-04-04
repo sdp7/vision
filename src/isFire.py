@@ -4,14 +4,14 @@ import rospy
 from std_msgs.msg import Float64MultiArray
 import cv2
 import numpy as np
-import imutils
+# import imutils
 
 class FireDetector:
     def __init__(self):
         self.capture = cv2.VideoCapture('http://abra:8080/?action=stream')
 
         rospy.init_node('fire_location')
-        self.rate = rospy.Rate(10)
+        self.rate = rospy.Rate(50)
         self.pub = rospy.Publisher("isFire", Float64MultiArray, queue_size=10)
         self.net = cv2.dnn.readNet("best.onnx")
         self.colors = [(255, 255, 0), (0, 255, 0), (0, 255, 255), (255, 0, 0)]
@@ -104,9 +104,9 @@ if __name__ == '__main__':
     while not rospy.is_shutdown():
         try:
             F.publish()
-            k = cv2.waitKey(25)
-            if k == 27:
-                break
+            # k = cv2.waitKey(25)
+            # if k == 27:
+            #     break
         except rospy.ROSInterruptException:
             pass
     
