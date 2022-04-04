@@ -1,19 +1,23 @@
 #!/usr/bin/env python
 
 import rospy
-from std_msgs.msg import Float64MultiArray
+from std_msgs.msg import Float64MultiArray, Bool
 import cv2
 import numpy as np
-# import imutils
+import imutils
+import os
+cur = os.path.dirname(os.path.realpath(__file__))
+
 
 class FireDetector:
     def __init__(self):
-        self.capture = cv2.VideoCapture('http://abra:8080/?action=stream')
-
         rospy.init_node('isFire')
-        self.rate = rospy.Rate(50)
-        self.pub = rospy.Publisher("isFire", Float64MultiArray, queue_size=10)
-        self.net = cv2.dnn.readNet("best.onnx")
+        self.capture = cv2.VideoCapture('http://abra:8080/?action=stream')
+        self.rate = rospy.Rate(35)
+        self.pub = rospy.Publisher("isFire", Bool, queue_size=10)
+        onx_path = cur + "/best.onnx"
+        print(f"this is where onx files is {onx_path}")
+        self.net = cv2.dnn.readNet(onx_path)
         self.colors = [(255, 255, 0), (0, 255, 0), (0, 255, 255), (255, 0, 0)]
         self.counter = 0
 
@@ -79,6 +83,7 @@ class FireDetector:
         outs = self.net.forward()
         class_ids, confidences, boxes = self.unwrap_detection(shapedframe, outs[0])
         CoordMsg = Float64MultiArray()
+        
         if len(boxes) != 0:
                  mainFire = np.argmax(confidences)
                  mainFireLoc = boxes[mainFire]
@@ -86,9 +91,12 @@ class FireDetector:
                  CentreY = mainFireLoc[1] - mainFireLoc[3]
                  CoordMsg.data.append(CentreX)
                  CoordMsg.data.append(CentreY)
-        # print(f'We got this coordmsg {CoordMsg}')
-        self.pub.publish(CoordMsg)
-        self.rate.sleep()
+                 self.pub.publish(True)
+                 exit()
+        
+        else: 
+            self.pub.publish(False)
+    
 	
         # For Printing out Fire
         # for (classid, confidence, box) in zip(class_ids, confidences, boxes):
@@ -104,10 +112,12 @@ if __name__ == '__main__':
     while not rospy.is_shutdown():
         try:
             F.publish()
-            # k = cv2.waitKey(25)
-            # if k == 27:
-            #     break
+            F.rate.sleep()
+            k = cv2.waitKey(25)
+            if k == 27:
+                break
         except rospy.ROSInterruptException:
+            print("Shutting down")
             break
     
     cv2.destroyAllWindows()
