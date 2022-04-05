@@ -13,13 +13,15 @@ class FireDetector:
     def __init__(self):
         rospy.init_node('isFire')
         self.capture = cv2.VideoCapture('http://abra:8080/?action=stream')
-        self.rate = rospy.Rate(35)
-        self.pub = rospy.Publisher("isFire", Bool, queue_size=10)
+        self.rate = rospy.Rate(20)
+        self.pub1 = rospy.Publisher("isFire", Bool, queue_size=10)
+        self.pub2 = rospy.Publisher("fire_pos", Float64MultiArray, queue_size=10)
         onx_path = cur + "/best.onnx"
         print(f"this is where onx files is {onx_path}")
         self.net = cv2.dnn.readNet(onx_path)
         self.colors = [(255, 255, 0), (0, 255, 0), (0, 255, 255), (255, 0, 0)]
         self.counter = 0
+        self.isFire = False
 
     #Find Fires    
     def unwrap_detection(self,input_image, output_data):
@@ -85,32 +87,32 @@ class FireDetector:
         CoordMsg = Float64MultiArray()
         
         if len(boxes) != 0:
-                 mainFire = np.argmax(confidences)
-                 mainFireLoc = boxes[mainFire]
-                 CentreX = mainFireLoc[0] + mainFireLoc[2]
-                 CentreY = mainFireLoc[1] - mainFireLoc[3]
-                 CoordMsg.data.append(CentreX)
-                 CoordMsg.data.append(CentreY)
-<<<<<<< HEAD:src/isFire2.py
-                 CoordMsg.data.append(mainFireLoc[2]*mainFireLoc[3])
-=======
-		 CoordMsg.data.append(mainFireLoc[2])
->>>>>>> db0b7c72f0cadf662a7b42ed86e59c8105686ca4:src/isFire.py
-                 self.pub.publish(CoordMsg)
-                 exit()
+                mainFire = np.argmax(confidences)
+                mainFireLoc = boxes[mainFire]
+                CentreX = mainFireLoc[0] + mainFireLoc[2]
+                CentreY = mainFireLoc[1] - mainFireLoc[3]
+                CoordMsg.data.append(CentreX)
+                CoordMsg.data.append(CentreY)
+                CoordMsg.data.append(mainFireLoc[2])
+                self.isFire = True
+                self.pub1.publish(self.isFire)
+                self.pub2.publish(CoordMsg)
+                # exit()
         
         else: 
-            self.pub.publish(False)
+            self.isFire = False
+            self.pub2.publish(CoordMsg)
+            self.pub1.publish(self.isFire)
     
 	
         # For Printing out Fire
-        for (classid, confidence, box) in zip(class_ids, confidences, boxes):
-             	color = self.colors[int(classid) % len(self.colors)]
-             	cv2.rectangle(frame, box, color, 2)
-             	cv2.rectangle(frame, (box[0], box[1] - 20), (box[0] + box[2], box[1]), color, -1)
-             	cv2.putText(frame, 'fire', (box[0], box[1] - 10), cv2.FONT_HERSHEY_SIMPLEX, .5, (0,0,0))
-        cv2.imshow("output", frame)
-        cv2.waitKey(1)
+        # for (classid, confidence, box) in zip(class_ids, confidences, boxes):
+        #      	color = self.colors[int(classid) % len(self.colors)]
+        #      	cv2.rectangle(frame, box, color, 2)
+        #      	cv2.rectangle(frame, (box[0], box[1] - 20), (box[0] + box[2], box[1]), color, -1)
+        #      	cv2.putText(frame, 'fire', (box[0], box[1] - 10), cv2.FONT_HERSHEY_SIMPLEX, .5, (0,0,0))
+        # cv2.imshow("output", frame)
+        # cv2.waitKey(1)
 
 if __name__ == '__main__':
     F = FireDetector()
