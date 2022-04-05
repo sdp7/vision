@@ -91,7 +91,7 @@ class FireDetector:
                  CentreY = mainFireLoc[1] - mainFireLoc[3]
                  CoordMsg.data.append(CentreX)
                  CoordMsg.data.append(CentreY)
-		 CoordMsg.data.append(mainFireLoc[2]*mainFireLoc[3])
+		 CoordMsg.data.append(mainFireLoc[2])
                  self.pub.publish(CoordMsg)
                  exit()
         
