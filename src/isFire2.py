@@ -4,7 +4,7 @@ import rospy
 from std_msgs.msg import Float64MultiArray, Bool
 import cv2
 import numpy as np
-import imutils
+#import imutils
 import os
 cur = os.path.dirname(os.path.realpath(__file__))
 
@@ -72,8 +72,8 @@ class FireDetector:
         return result
 
     # the output will be written to output.avi
-    #global out
-    #out = cv2.VideoWriter('output.avi',cv2.VideoWriter_fourcc(*'MJPG'),15.0,(640,640))
+    global out
+    out = cv2.VideoWriter('output.avi',cv2.VideoWriter_fourcc(*'MJPG'),15.0,(640,640))
     
     #This should publish the coordinates of the fire (specifically the base of the fire)
     def publish(self):
@@ -91,7 +91,7 @@ class FireDetector:
                  CentreY = mainFireLoc[1] - mainFireLoc[3]
                  CoordMsg.data.append(CentreX)
                  CoordMsg.data.append(CentreY)
-		 CoordMsg.data.append(mainFireLoc[2]*mainFireLoc[3])
+                 CoordMsg.data.append(mainFireLoc[2]*mainFireLoc[3])
                  self.pub.publish(CoordMsg)
                  exit()
         
@@ -100,13 +100,13 @@ class FireDetector:
     
 	
         # For Printing out Fire
-        # for (classid, confidence, box) in zip(class_ids, confidences, boxes):
-        #     	color = self.colors[int(classid) % len(self.colors)]
-        #     	cv2.rectangle(frame, box, color, 2)
-        #     	cv2.rectangle(frame, (box[0], box[1] - 20), (box[0] + box[2], box[1]), color, -1)
-        #     	cv2.putText(frame, 'fire', (box[0], box[1] - 10), cv2.FONT_HERSHEY_SIMPLEX, .5, (0,0,0))
-        # cv2.imshow("output", frame)
-        # cv2.waitKey(1)
+        for (classid, confidence, box) in zip(class_ids, confidences, boxes):
+             	color = self.colors[int(classid) % len(self.colors)]
+             	cv2.rectangle(frame, box, color, 2)
+             	cv2.rectangle(frame, (box[0], box[1] - 20), (box[0] + box[2], box[1]), color, -1)
+             	cv2.putText(frame, 'fire', (box[0], box[1] - 10), cv2.FONT_HERSHEY_SIMPLEX, .5, (0,0,0))
+        cv2.imshow("output", frame)
+        cv2.waitKey(1)
 
 if __name__ == '__main__':
     F = FireDetector()
