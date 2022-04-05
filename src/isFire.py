@@ -72,8 +72,8 @@ class FireDetector:
         return result
 
     # the output will be written to output.avi
-    global out
-    out = cv2.VideoWriter('output.avi',cv2.VideoWriter_fourcc(*'MJPG'),15.0,(640,640))
+    #global out
+    #out = cv2.VideoWriter('output.avi',cv2.VideoWriter_fourcc(*'MJPG'),15.0,(640,640))
     
     #This should publish the coordinates of the fire (specifically the base of the fire)
     def publish(self):
