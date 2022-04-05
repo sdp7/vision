@@ -23,6 +23,8 @@ class FireDetector:
         self.counter = 0
         self.isFire = False
 
+        self.statepub = rospy.Publisher('scan_state', Bool, queue_size =10)
+
     #Find Fires    
     def unwrap_detection(self,input_image, output_data):
         class_ids = []
@@ -97,11 +99,13 @@ class FireDetector:
                 self.isFire = True
                 self.pub1.publish(self.isFire)
                 self.pub2.publish(CoordMsg)
+                self.statepub.publish(False)
                 # exit()
         
         else: 
-            self.isFire = False
+            # self.isFire = False
             self.pub2.publish(CoordMsg)
+            # self.statepub.publish(True)
             self.pub1.publish(self.isFire)
     
 	
@@ -116,6 +120,8 @@ class FireDetector:
 
 if __name__ == '__main__':
     F = FireDetector()
+    # statepub = rospy.Publisher('scan_state', Bool, queue_size =10)
+    # statepub.publish(True) 
     while not rospy.is_shutdown():
         try:
             F.publish()
